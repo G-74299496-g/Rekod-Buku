@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penjejak Bacaan 100 Buku - Edisi Pengelasan Dewey Decimal Classification (DDC) & Fiksyen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght=700&family=Playfair+Display:ital,wght=0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .cursive-title {
+            font-family: 'Dancing Script', cursive;
+        }
+        .serif-text {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        /* Cetakan A4 yang dioptimumkan */
+        @media print {
+            body {
+                background-color: white !important;
+                color: black !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-container {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                margin: 0 auto !important;
+                background: white !important;
+            }
+        }
+        
+        /* Animasi interaktif bagi bulatan penjejak */
+        .bubble-node {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        .bubble-node:hover {
+            stroke-width: 3.5px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+        }
+        
+        /* Custom scrollbar untuk log digital */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col items-center min-h-screen relative">
+
+    <!-- SISTEM TOAST / NOTIFIKASI MODEN (Ganti Browser Alert) -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full no-print"></div>
+
+    <!-- BUTANG NAVIGASI UTAMA -->
+    <div class="no-print w-full max-w-7xl flex flex-wrap gap-4 mb-6 justify-between items-center bg-white p-5 rounded-3xl shadow-sm border border-slate-100 animate-fade-in">
+        <div class="flex items-center gap-3">
+            <span class="text-3xl">🌟</span>
+            <div>
+                <h1 class="font-bold text-xl text-slate-800">Penjejak Buku Digital 100 Hari (Edisi Sistem DDC, Fiksyen & AI Suara)</h1>
+                <p class="text-xs text-slate-500">Mewarna secara interaktif, klasifikasikan mengikut Sistem DDC & Kategori Fiksyen, serta dengar ulasan audio dengan Gemini AI.</p>
+            </div>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <button onclick="window.print()" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-5 py-2.5 rounded-2xl shadow-md flex items-center gap-2 transition text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                Cetak Fizikal (A4)
+            </button>
+            <button onclick="confirmResetBubbles()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold px-4 py-2.5 rounded-2xl transition text-sm">
+                Padam Semua Data
+            </button>
+        </div>
+    </div>
+
+    <!-- TATA RAJAH DWI-KOLUM -->
+    <div class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- KOLUM KIRI: PENJEJAK CETAKAN FIZIKAL (8/12 Bahagian) -->
+        <div class="lg:col-span-8 flex justify-center w-full">
+            <div class="print-container bg-white border border-slate-100 rounded-3xl shadow-xl w-full max-w-[800px] p-8 md:p-10 flex flex-col items-center relative box-border">
+                
+                <!-- Header Utama -->
+                <div class="text-center w-full mb-6">
+                    <h1 class="cursive-title text-5xl md:text-6xl text-black font-bold tracking-wide">Reading Tracker</h1>
+                    <h2 class="text-lg md:text-xl font-bold tracking-wider uppercase mt-1 text-gray-800">
+                        Penjejak Bacaan 100 Buku <span class="text-gray-500 font-normal">(100-Book Reading Tracker)</span>
+                    </h2>
+                </div>
+
+                <!-- Kolum Atas (Tajuk & Tips) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full border-b border-gray-200 pb-6 mb-4">
+                    <!-- Kiri -->
+                    <div class="flex flex-col items-start text-left">
+                        <h3 class="font-extrabold text-[11px] tracking-wider uppercase text-black mb-2">
+                            TAJUK DAN INSPIRASI UTAMA
+                        </h3>
+                        <div class="flex gap-3">
+                            <div class="flex-shrink-0 w-9 h-9 border border-black rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-[11px] text-black leading-tight">Membaca Adalah Senaman Minda</h4>
+                                <p class="text-[10px] text-gray-700 leading-relaxed mt-0.5">
+                                    Seperti senaman fizikal untuk badan, membaca setiap hari memastikan otak kekal cerdas dan kreatif.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kanan -->
+                    <div class="flex flex-col items-start text-left">
+                        <h3 class="font-extrabold text-[11px] tracking-wider uppercase text-black mb-2">
+                            TIPS KEJAYAAN MEMBACA
+                        </h3>
+                        <div class="flex gap-3">
+                            <div class="flex-shrink-0 w-9 h-9 border border-black rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="13" r="7" stroke-width="1.8"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v4l2 2" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-[11px] text-black leading-tight">Konsistensi Melebihi Kelajuan</h4>
+                                <p class="text-[10px] text-gray-700 leading-relaxed mt-0.5">
+                                    Tidak perlu tergesa-gesa; membaca sedikit setiap hari adalah lebih baik daripada membaca banyak tetapi hanya sekali-sekala.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bahagian SVG Track Tengah -->
+                <div class="relative w-full aspect-square max-w-[440px] my-2 flex justify-center items-center">
+                    <svg id="bubble-svg" viewBox="-50 -50 700 700" width="100%" height="100%" class="select-none">
+                        
+                        <!-- ILUSTRASI TENGAH (Bunga & Buku Bertimbun Seni Mewarna) -->
+                        <g id="illustration-center" transform="translate(300, 305) scale(1.15)" stroke="black" stroke-width="2.2" fill="white" stroke-linejoin="round" stroke-linecap="round">
+                            <circle cx="0" cy="0" r="100" fill="none" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4,4" />
+                            
+                            <g opacity="0.85" stroke-width="1.5">
+                                <circle cx="-80" cy="-40" r="4" fill="white"/>
+                                <path d="M-85,-40 C-85,-45 -75,-45 -75,-40 C-75,-35 -85,-35 -85,-40" />
+                                <circle cx="80" cy="40" r="4" fill="white"/>
+                                <circle cx="-20" cy="-90" r="3" fill="white"/>
+                                <circle cx="60" cy="-70" r="3.5" fill="white"/>
+                                <circle cx="-70" cy="60" r="4.5" fill="white"/>
+                            </g>
+
+                            <!-- BUKU 1 -->
+                            <g id="buku1">
+                                <path d="M -75,45 L 55,15 L 85,35 L -45,65 Z" fill="white" />
+                                <path d="M -45,65 L 85,35 L 85,55 L -45,85 Z" fill="white" />
+                                <path d="M -75,45 C -100,50 -100,80 -45,85 L -45,65" fill="white" />
+                                <line x1="-40" y1="69" x2="80" y2="41" stroke-width="1.2"/>
+                                <line x1="-40" y1="74" x2="80" y2="46" stroke-width="1.2"/>
+                                <line x1="-40" y1="79" x2="80" y2="51" stroke-width="1.2"/>
+                            </g>
+
+                            <!-- BUKU 2 -->
+                            <g id="buku2">
+                                <path d="M -60,20 L 65,-3 L 90,13 L -35,35 Z" fill="white" />
+                                <path d="M -35,35 L 90,13 L 90,28 L -35,50 Z" fill="white" />
+                                <path d="M -60,20 C -80,23 -80,48 -35,50 L -35,35" fill="white" />
+                                <line x1="-30" y1="38" x2="85" y2="18" stroke-width="1.2"/>
+                                <line x1="-30" y1="43" x2="85" y2="23" stroke-width="1.2"/>
+                            </g>
+
+                            <!-- BUKU 3 -->
+                            <g id="buku3" transform="rotate(-10, 0, 0)">
+                                <path d="M -45,-5 L 50,-20 L 70,-3 L -25,12 Z" fill="white" />
+                                <path d="M -25,12 L 70,-3 L 70,8 L -25,23 Z" fill="white" />
+                                <path d="M -45,-5 C -62,-3 -62,18 -25,23" fill="white" />
+                                <line x1="-20" y1="15" x2="65" y2="1" stroke-width="1.2"/>
+                            </g>
+
+                            <!-- PASU -->
+                            <g id="pasu" transform="translate(10, -45)">
+                                <path d="M -15,10 C -15,22 15,22 15,10 Z" fill="#f9fafb" stroke="none" />
+                                <path d="M -12,-15 C -20,-8 -22,10 -15,22 C -8,28 8,28 15,22 C 22,10 20,-8 12,-15 Z" fill="none" stroke="black" />
+                                <ellipse cx="0" cy="-22" rx="12" ry="4" fill="white" stroke="black" />
+                                <path d="M -9,-17 Q 0,-14 9,-17" fill="none" stroke="black" />
+                                <path d="M -1,-55 Q -3,-10 -5,15" fill="none" stroke="black" stroke-width="2" />
+                                <path d="M -3,-35 Q -25,-45 -22,-25 Q -10,-20 -3,-30 Z" fill="white" stroke="black" />
+                                <path d="M -2,-45 Q 20,-48 18,-32 Q 8,-30 -2,-38 Z" fill="white" stroke="black" />
+                            </g>
+
+                            <!-- BUNGA -->
+                            <g id="bunga-utama" transform="translate(8, -115)">
+                                <g stroke-width="1.8">
+                                    <path d="M0,0 C-8,-25 8,-25 0,0" fill="white" stroke="black" />
+                                    <path d="M0,0 C-8,-25 8,-25 0,0" transform="rotate(30)" fill="white" stroke="black" />
+                                    <path d="M0,0 C-8,-25 8,-25 0,0" transform="rotate(60)" fill="white" stroke="black" />
+                                    <path d="M0,0 C-8,-25 8,-25 0,0" transform="rotate(90)" fill="white" stroke="black" />
+                                    <path d="M0,0 C-8,-25 8,-25 0,0" transform="rotate(120)" fill="white" stroke="black" />
+                                    <path d="M0,0 C-8,-25 8,-25 0,0" transform="rotate(150)" fill="white" stroke="black" />
+                                    <path d="M0,0 C-8,-25 8,-25 0,0" transform="rotate(180)" fill="white" stroke="black" />
+                                    <path d="M0,0 C-8,-25 8,-25 0,0" transform="rotate(210)" fill="white" stroke="black" />
+                                    <path d="M0,0 C-8,-25 8,-25 0,0" transform="rotate(240)" fill="white" stroke="black" />
+                                    <path d="M0,0 C-8,-25 8,-25 0,0" transform="rotate(270)" fill="white" stroke="black" />
+                                    <path d="M0,0 C-8,-25 8,-25 0,0" transform="rotate(300)" fill="white" stroke="black" />
+                                    <path d="M0,0 C-8,-25 8,-25 0,0" transform="rotate(330)" fill="white" stroke="black" />
+                                </g>
+                                <circle cx="0" cy="0" r="10" fill="white" stroke="black" stroke-width="2" />
+                                <circle cx="-3" cy="-3" r="1" fill="black" stroke="none" />
+                                <circle cx="3" cy="-2" r="1" fill="black" stroke="none" />
+                                <circle cx="2" cy="3" r="1" fill="black" stroke="none" />
+                                <circle cx="-2" cy="2" r="1" fill="black" stroke="none" />
+                            </g>
+                        </g>
+
+                        <!-- TRACKING BUBBLES -->
+                        <g id="bubble-track"></g>
+                    </svg>
+                </div>
+
+                <!-- Kolum Bawah (Apa yang Boleh Dikira & Sistem Pengelasan DDC) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full border-t border-gray-200 pt-5 mb-4">
+                    <div class="flex flex-col items-start text-left">
+                        <div class="flex items-center gap-2 mb-1.5">
+                            <span class="text-lg">📚</span>
+                            <h3 class="font-bold text-[11px] text-black uppercase">Apa Yang Boleh Dikira?</h3>
+                        </div>
+                        <p class="text-[10px] text-gray-700 leading-relaxed pl-1">
+                            Anda boleh mewarnakan bulatan untuk buku fizikal, e-book, atau buku audio (audiobooks) yang telah dihabiskan.
+                        </p>
+                    </div>
+
+                    <div class="flex flex-col items-start text-left">
+                        <div class="flex items-center gap-2 mb-1.5">
+                            <span class="text-lg">🗂️</span>
+                            <h3 class="font-bold text-[11px] text-black uppercase">Sistem Pengelasan DDC & Fiksyen</h3>
+                        </div>
+                        <p class="text-[10px] text-gray-700 leading-relaxed pl-1">
+                            Aplikasi ini menyokong klasifikasi Dewey (DDC) 000 hingga 900 serta pengelasan karya fiksyen khusus mengikut Bahasa Inggeris, Bahasa Melayu, dan Bahasa Cina untuk memudahkan catatan anda.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Mekanisme Penjejakan -->
+                <div class="w-full text-center border-t border-gray-100 pt-4 flex flex-col items-center">
+                    <h3 class="font-extrabold text-[10px] tracking-widest uppercase text-black mb-2">MEKANISME PENJEJAKAN & SASARAN</h3>
+                    <div class="max-w-xl text-[10px] text-gray-800 leading-relaxed space-y-1 mb-4">
+                        <p><strong class="text-black">Satu Buku, Satu Warna:</strong> Setiap kali anda menghabiskan pembacaan sebuah buku, warnakan satu bulatan.</p>
+                        <p><strong class="text-black">Sasaran 100 Buku:</strong> Matlamat ini direka untuk membina ketahanan mental dan kecintaan sepanjang hayat terhadap ilmu pengetahuan.</p>
+                    </div>
+
+                    <div class="w-full border-t border-dashed border-gray-300 pt-3">
+                        <p class="serif-text text-sm italic text-black font-semibold">"Membaca Memberi Anda Tempat Untuk Pergi."</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- KOLUM KANAN: KAWALAN MUDAH & PEMBANTU AI (4/12 Bahagian, Tidak dicetak) -->
+        <div class="lg:col-span-4 no-print flex flex-col gap-6 w-full">
+            
+            <!-- PANEL 0: PAPAN KEMAJUAN & METRIK -->
+            <div class="bg-gradient-to-br from-slate-800 to-slate-950 p-6 rounded-3xl text-white shadow-xl relative overflow-hidden">
+                <div class="absolute right-0 top-0 opacity-10 transform translate-x-4 -translate-y-4">
+                    <span class="text-9xl">📖</span>
+                </div>
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="font-bold text-base">Kemajuan Membaca Anda</h2>
+                    <span class="text-2xl">🏆</span>
+                </div>
+                <div class="flex items-end gap-1 mb-2">
+                    <span id="stat-count" class="text-4xl font-extrabold">0</span>
+                    <span class="text-lg opacity-80">/ 100 buku</span>
+                </div>
+                <!-- Progress bar -->
+                <div class="w-full bg-white/20 h-3 rounded-full overflow-hidden mb-1">
+                    <div id="stat-bar" class="bg-emerald-400 h-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <p id="stat-percent" class="text-xs text-slate-300 font-medium mt-1">Sedia untuk mulakan kembara membaca anda!</p>
+                
+                <div class="grid grid-cols-2 gap-2 mt-4">
+                    <button onclick="generateAIReaderProfile()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-[10px] py-2.5 rounded-xl flex items-center justify-center gap-1 transition">
+                        <span>✨ Profil Pembaca AI</span>
+                    </button>
+                    <button onclick="generateAICertificate()" class="w-full bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-[10px] py-2.5 rounded-xl flex items-center justify-center gap-1 transition">
+                        <span>✨ Sijil & Lencana AI</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MODAL UNTUK HASIL PROFIL PEMBACA AI -->
+            <div id="profile-modal" class="hidden bg-white p-5 rounded-3xl border border-slate-200 shadow-xl space-y-3 animate-fade-in">
+                <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                    <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                        <span>🏆 Profil Sijil Pembaca AI</span>
+                    </h3>
+                    <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-600 text-lg">×</button>
+                </div>
+                <div class="space-y-3">
+                    <div class="text-center bg-slate-50 p-4 rounded-2xl border-2 border-dashed border-emerald-300 relative">
+                        <p class="text-[10px] tracking-widest text-emerald-600 font-bold uppercase">GELARAN UNIK ANDA</p>
+                        <h4 id="profile-title" class="serif-text text-lg font-bold text-slate-900 mt-1">Sedang Menganalisis...</h4>
+                    </div>
+                    <div class="text-xs text-slate-600 space-y-2">
+                        <p class="font-bold text-slate-800 flex justify-between items-center">
+                            <span>Analisis Psikologi Pembaca:</span>
+                            <button id="btn-speak-profile" onclick="speakText(document.getElementById('profile-analysis').textContent, this)" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-2 py-1 rounded-lg text-[10px] font-bold transition flex items-center gap-1">
+                                <span>🔊 Dengar Suara AI</span>
+                            </button>
+                        </p>
+                        <p id="profile-analysis" class="italic leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL REKAAN SIJIL & LENCANA KEAHLIAN AI -->
+            <div id="certificate-modal" class="hidden bg-white p-5 rounded-3xl border border-slate-200 shadow-xl space-y-4 animate-fade-in">
+                <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                    <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                        <span>✨ Sijil Penghargaan Sastera AI</span>
+                    </h3>
+                    <button onclick="closeCertificateModal()" class="text-slate-400 hover:text-slate-600 text-lg">×</button>
+                </div>
+                
+                <div id="certificate-content" class="bg-amber-50/50 p-6 rounded-2xl border border-amber-200 text-center space-y-4 relative overflow-hidden">
+                    <div class="absolute inset-0 border-4 border-amber-100 rounded-2xl m-1.5 pointer-events-none"></div>
+                    
+                    <div class="text-center">
+                        <span class="text-4xl text-amber-500">👑</span>
+                        <h4 class="cursive-title text-3xl text-slate-800 mt-2">Sijil Penghargaan</h4>
+                        <p class="text-[9px] uppercase tracking-widest text-slate-500 mt-1">Dianugerahkan Kepada Ahli Pembaca Tegar</p>
+                    </div>
+
+                    <div class="py-2">
+                        <p id="cert-title" class="text-xs font-semibold text-slate-800 underline uppercase tracking-wider">SI DIA YANG BERWAWASAN</p>
+                        <p id="cert-desc" class="text-[11px] text-slate-600 leading-relaxed mt-2 italic">"Telah menunjukkan ketahanan mental yang tinggi dalam menerokai alam fantasi, sastera, dan ilmu."</p>
+                    </div>
+
+                    <div class="border-t border-amber-200 pt-3 flex justify-between items-center text-[9px] text-slate-500 font-semibold px-4">
+                        <div class="text-left">
+                            <p>Tarikh: <span id="cert-date">-</span></p>
+                            <p>Buku Dibaca: <span id="cert-books-count">0</span> / 100</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="cursive-title text-lg text-amber-600">Gemini AI Advisor</p>
+                            <p class="text-[8px] tracking-wider text-slate-400">Pengesah Digital</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <button onclick="printCertificate()" class="w-full bg-slate-950 hover:bg-slate-850 text-white font-bold text-xs py-2 rounded-xl transition">
+                        Cetak Sijil Kemajuan Anda 🖨️
+                    </button>
+                </div>
+            </div>
+
+            <!-- PANEL 1: MOD MEWARNA CEPAT -->
+            <div class="bg-white p-6 rounded-3xl shadow-md border border-slate-100 flex flex-col">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-2xl">🎨</span>
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-base">Mod Mewarna Cepat</h2>
+                        <p class="text-xs text-slate-500">Pilih warna & klik terus mana-mana bulatan di kiri!</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Palet Pilihan Warna -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-2">Langkah 1: Pilih Warna Kegemaran Anda</label>
+                        <div class="grid grid-cols-7 gap-2">
+                            <button onclick="setSelectedColor('#fca5a5', this)" class="color-btn w-full aspect-square rounded-full bg-[#fca5a5] border-2 border-slate-900 transition scale-110" title="Merah Jambu"></button>
+                            <button onclick="setSelectedColor('#fde047', this)" class="color-btn w-full aspect-square rounded-full bg-[#fde047] border-2 border-transparent hover:border-slate-300 transition" title="Kuning"></button>
+                            <button onclick="setSelectedColor('#86efac', this)" class="color-btn w-full aspect-square rounded-full bg-[#86efac] border-2 border-transparent hover:border-slate-300 transition" title="Hijau"></button>
+                            <button onclick="setSelectedColor('#93c5fd', this)" class="color-btn w-full aspect-square rounded-full bg-[#93c5fd] border-2 border-transparent hover:border-slate-300 transition" title="Biru"></button>
+                            <button onclick="setSelectedColor('#a5b4fc', this)" class="color-btn w-full aspect-square rounded-full bg-[#a5b4fc] border-2 border-transparent hover:border-slate-300 transition" title="Indigo"></button>
+                            <button onclick="setSelectedColor('#f9a8d4', this)" class="color-btn w-full aspect-square rounded-full bg-[#f9a8d4] border-2 border-transparent hover:border-slate-300 transition" title="Merah Jambu Pekat"></button>
+                            <button onclick="setSelectedColor('#f97316', this)" class="color-btn w-full aspect-square rounded-full bg-[#f97316] border-2 border-transparent hover:border-slate-300 transition" title="Jingga"></button>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-xs text-slate-600 leading-relaxed">
+                        <strong class="text-slate-800">Langkah 2:</strong> Hanya klik pada bulatan nombor (1-100) di bahagian tengah kiri untuk mewarnakannya secara terus! (Data disimpan secara automatik).
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PANEL 2: DIARI JURNAL BUKU & AI (KEMAS KINI SISTEM DEWEY DECIMAL - DDC & FIKSYEN) -->
+            <div class="bg-white p-6 rounded-3xl shadow-md border border-slate-100 flex flex-col">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-2xl">📝</span>
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-base">Diari Buku & Sistem DDC / Fiksyen</h2>
+                        <p class="text-xs text-slate-500">Ulas buku mengikut klasifikasi Sistem Dewey atau kategori Fiksyen.</p>
+                    </div>
+                </div>
+
+                <!-- Borang Log Buku -->
+                <div class="space-y-4">
+                    <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 flex justify-between items-center">
+                        <span class="text-xs font-semibold text-slate-700">Buku Dipilih:</span>
+                        <span id="selected-book-badge" class="bg-slate-900 text-white font-bold text-xs px-3 py-1.5 rounded-full">Sila Pilih di Kiri</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tajuk Buku</label>
+                        <input id="input-title" type="text" placeholder="Contoh: Sejarah Tamadun, Biografi, Novel..." class="w-full text-sm px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-800" disabled>
+                    </div>
+
+                    <!-- SISTEM KEMASKINI: DROPDOWN PENGELASAN DEWEY (DDC) DAN TAMBAHAN FIKSYEN MULTI-BAHASA -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Pengelasan Perpuluhan Dewey (DDC) / Fiksyen</label>
+                        <select id="input-ddc" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-800 bg-white" disabled>
+                            <option value="" disabled selected>Pilih Klasifikasi Buku</option>
+                            <optgroup label="Sistem Perpuluhan Dewey (DDC)">
+                                <option value="000 - Komputer, Maklumat & Rujukan">000 - Komputer, Maklumat & Rujukan</option>
+                                <option value="100 - Falsafah & Psikologi">100 - Falsafah & Psikologi</option>
+                                <option value="200 - Agama">200 - Agama</option>
+                                <option value="300 - Sains Sosial">300 - Sains Sosial</option>
+                                <option value="400 - Bahasa">400 - Bahasa</option>
+                                <option value="500 - Sains Tulen">500 - Sains Tulen</option>
+                                <option value="600 - Teknologi & Sains Gunaan">600 - Teknologi & Sains Gunaan</option>
+                                <option value="700 - Kesenian & Rekreasi">700 - Kesenian & Rekreasi</option>
+                                <option value="800 - Kesusasteraan (Sastera & Puisi)">800 - Kesusasteraan (Sastera & Puisi)</option>
+                                <option value="900 - Sejarah, Geografi & Biografi">900 - Sejarah, Geografi & Biografi</option>
+                            </optgroup>
+                            <optgroup label="Kategori Fiksyen Kreatif">
+                                <option value="Fiksyen - Bahasa Inggeris">Fiksyen - Bahasa Inggeris (English Fiction)</option>
+                                <option value="Fiksyen - Bahasa Melayu">Fiksyen - Bahasa Melayu (Malay Fiction)</option>
+                                <option value="Fiksyen - Bahasa Cina">Fiksyen - Bahasa Cina (Chinese Fiction)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <!-- Butang Gemini AI Log -->
+                    <button id="btn-ai-log" onclick="generateAILog()" class="w-full bg-slate-900 hover:bg-slate-800 text-white disabled:bg-slate-100 disabled:text-slate-400 font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition" disabled>
+                        <span>✨ Jana Rumusan & Refleksi AI</span>
+                    </button>
+                    
+                    <div id="ai-log-loading" class="hidden text-center py-2">
+                        <div class="inline-block w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
+                        <p class="text-[11px] text-slate-500 mt-1">Gemini sedang menganalisis klasifikasi...</p>
+                    </div>
+
+                    <!-- Hasil Log AI -->
+                    <div id="ai-log-result" class="hidden bg-emerald-50 border border-emerald-100 p-3.5 rounded-2xl text-xs space-y-2 relative">
+                        <div class="flex justify-between items-center">
+                            <p class="font-semibold text-emerald-800">Rumusan Gemini AI:</p>
+                            <!-- NEW TTS VOICE BUTTON FOR LOG SUMMARY & LESSON -->
+                            <button onclick="speakText(document.getElementById('ai-summary').textContent + '. Pengajaran: ' + document.getElementById('ai-lesson').textContent, this)" class="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 px-2 py-0.5 rounded-lg text-[10px] font-bold transition flex items-center gap-0.5">
+                                <span>🔊 Dengar Suara AI</span>
+                            </button>
+                        </div>
+                        <p id="ai-summary" class="text-slate-700 italic leading-relaxed"></p>
+                        <div class="border-t border-emerald-100 pt-2">
+                            <!-- KEMASKINI: Ditukar kepada Pengajaran Utama -->
+                            <p class="font-semibold text-emerald-800">Pengajaran Utama:</p>
+                            <p id="ai-lesson" class="text-slate-700 leading-relaxed"></p>
+                        </div>
+                    </div>
+
+                    <button id="btn-save-log" onclick="saveBookLog()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white disabled:bg-slate-100 disabled:text-slate-400 font-bold text-xs py-2.5 rounded-xl transition" disabled>
+                        Simpan Ulasan Digital
+                    </button>
+                </div>
+            </div>
+
+            <!-- PANEL 2.5 - CABARAN KUIZ TRIVIA BUKU AI ✨ -->
+            <div class="bg-white p-6 rounded-3xl shadow-md border border-slate-100 flex flex-col">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-2xl">🧠</span>
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-base">Cabaran Kuiz Trivia Buku AI</h2>
+                        <p class="text-xs text-slate-500">Mahu uji kefahaman anda? Biar Gemini menjana kuiz khusus!</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tajuk Buku Untuk Diuji</label>
+                        <input id="trivia-book-title" type="text" placeholder="Contoh: Harry Potter, Salina, dsb." class="w-full text-sm px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-800">
+                    </div>
+
+                    <button onclick="generateBookTrivia()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition">
+                        <span>✨ Bina Kuiz Trivia Buku</span>
+                    </button>
+
+                    <div id="ai-trivia-loading" class="hidden text-center py-4">
+                        <div class="inline-block w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
+                        <p class="text-xs text-slate-500 mt-1">Gemini sedang merumus soalan kuiz eksklusif...</p>
+                    </div>
+
+                    <!-- Bekas Soalan Kuiz Trivia -->
+                    <div id="ai-trivia-container" class="hidden bg-slate-50 border border-slate-150 p-4 rounded-2xl space-y-4 text-xs">
+                        <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                            <span id="trivia-progress" class="font-bold text-slate-700">Soalan 1 daripada 3</span>
+                            <div class="flex items-center gap-2">
+                                <!-- NEW TTS VOICE BUTTON FOR TRIVIA QUESTION -->
+                                <button onclick="speakText(document.getElementById('trivia-question-text').textContent, this)" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-2 py-0.5 rounded-lg text-[9px] font-bold transition flex items-center gap-0.5">
+                                    <span>🔊 Sebut Soalan</span>
+                                </button>
+                                <span id="trivia-score" class="bg-indigo-100 text-indigo-800 font-bold px-2.5 py-1 rounded-full">Skor: 0</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <p id="trivia-question-text" class="font-semibold text-slate-800 text-sm leading-relaxed"></p>
+                            <div id="trivia-options-box" class="flex flex-col gap-2">
+                                <!-- Pilihan jawapan dinamik -->
+                            </div>
+                        </div>
+
+                        <div id="trivia-explanation-box" class="hidden p-3 bg-indigo-50 border border-indigo-100 rounded-xl text-slate-700 leading-relaxed">
+                            <!-- Huraian jawapan daripada AI -->
+                        </div>
+
+                        <button id="btn-trivia-next" onclick="nextTriviaQuestion()" class="hidden w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-xl transition">
+                            Seterusnya
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL 3: SEMBANG KELAB BUKU AI (AI Chatbot) -->
+            <div class="bg-white p-6 rounded-3xl shadow-md border border-slate-100 flex flex-col">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-2xl">💬</span>
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-base">Sembang Kelab Buku AI</h2>
+                        <p class="text-xs text-slate-500">Bincang intipati buku anda secara interaktif bersama AI.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <!-- Chat window -->
+                    <div id="chat-window" class="h-48 border border-slate-100 rounded-2xl bg-slate-50 p-3 overflow-y-auto text-xs space-y-2 custom-scroll">
+                        <div class="bg-indigo-50 border border-indigo-100 text-indigo-900 p-2.5 rounded-2xl">
+                            <strong>✨ Kelab Buku Gemini:</strong> Hai! Saya kelab buku maya anda. Tanyalah apa sahaja mengenai buku yang anda rekod atau minta saya mulakan kuiz refleksi yang seronok!
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <input id="chat-input" type="text" placeholder="Tanya soalan tentang buku anda..." class="flex-grow text-xs px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-800">
+                        <button onclick="sendChatMessage()" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-2 rounded-xl text-xs font-bold transition">
+                            Kirim
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL 4: CADANGAN BUKU AI -->
+            <div class="bg-white p-6 rounded-3xl shadow-md border border-slate-100 flex flex-col">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-2xl">✨</span>
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-base">Rekomendasi Buku AI</h2>
+                        <p class="text-xs text-slate-500">Bingung mahu baca buku apa? Tanya Gemini AI!</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Apakah minat atau genre kegemaran anda?</label>
+                        <input id="input-preference" type="text" placeholder="Contoh: Novel sejarah, sains gunaan, falsafah, fiksyen bahasa cina..." class="w-full text-sm px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-800">
+                    </div>
+
+                    <button onclick="getAIConsultation()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition">
+                        <span>✨ Dapatkan Cadangan AI</span>
+                    </button>
+
+                    <div id="ai-consult-loading" class="hidden text-center py-4">
+                        <div class="inline-block w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
+                        <p class="text-xs text-slate-500 mt-1">Mencari buku terbaik di perpustakaan AI...</p>
+                    </div>
+
+                    <!-- Keputusan Cadangan AI -->
+                    <div id="ai-consult-result" class="hidden bg-amber-50 border border-amber-100 p-4 rounded-2xl text-xs max-h-60 overflow-y-auto custom-scroll space-y-3">
+                        <h4 class="font-bold text-amber-900 flex items-center gap-1">
+                            <span>✨ Pengesyoran Buku:</span>
+                        </h4>
+                        <div id="consult-text" class="text-slate-700 whitespace-pre-line leading-relaxed"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL 5: MOTIVASI HARIAN -->
+            <div class="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-3xl border border-indigo-100">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-bold text-indigo-900 text-sm flex items-center gap-1.5">
+                        <span>💡 Kata Hikmah Harian</span>
+                    </h3>
+                    <!-- NEW TTS VOICE BUTTON FOR MOTIVATION QUOTE -->
+                    <button id="btn-speak-motivation" onclick="speakText(document.getElementById('motivation-text').textContent, this)" class="bg-indigo-100 text-indigo-800 hover:bg-indigo-200 px-2 py-0.5 rounded-lg text-[10px] font-bold transition flex items-center gap-0.5 hidden">
+                        <span>🔊 Dengar Suara AI</span>
+                    </button>
+                </div>
+                <p class="text-xs text-indigo-700 leading-relaxed mb-4">
+                    Dapatkan suntikan semangat membaca daripada tokoh sasterawan dunia bila-bila masa.
+                </p>
+                <button onclick="getAIMotivation()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition">
+                    <span>✨ Suntik Semangat AI</span>
+                </button>
+                
+                <div id="ai-motivation-result" class="hidden mt-3 p-3.5 bg-white/80 backdrop-blur-sm rounded-2xl border border-indigo-100 text-xs text-indigo-900 italic leading-relaxed">
+                    <p id="motivation-text"></p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Script Utama Penjanaan 100 Bulatan & Integrasi API Gemini -->
+    <script>
+        let selectedBookNumber = null;
+        let selectedColor = '#fca5a5'; // Warna lalai (Merah Jambu Pastel)
+        
+        // Simpan rekod log dalam memori & ditarik daripada LocalStorage jika ada
+        let bookLogs = {};
+
+        // Struktur pembahagian 100 bulatan dalam 3 lapisan bulatan konsentrik:
+        const layers = [
+            { r: 255, count: 42, startAngle: -90 },
+            { r: 195, count: 33, startAngle: -80 },
+            { r: 135, count: 25, startAngle: -70 }
+        ];
+
+        // Kedudukan bendera (Flag) di bulatan bagi setiap 10 buku
+        const milestoneIndices = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+
+        // Konfigurasi Gemini API
+        const apiKey = ""; 
+
+        // Pembolehubah kawalan Kuiz Trivia
+        let triviaQuizData = [];
+        let currentTriviaIndex = 0;
+        let triviaUserScore = 0;
+        let triviaAnswered = false;
+
+        // Sistem Toast Notifikasi buatan sendiri (Gantikan alert browser)
+        function showToast(message, type = "success") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgClass = "bg-emerald-500 text-white";
+            let icon = "⭐";
+            
+            if (type === "error") {
+                bgClass = "bg-rose-500 text-white";
+                icon = "❌";
+            } else if (type === "info") {
+                bgClass = "bg-slate-800 text-white";
+                icon = "ℹ️";
+            }
+
+            toast.className = `${bgClass} flex items-center gap-2 p-4 rounded-2xl shadow-lg transform transition duration-300 ease-out translate-y-2 opacity-0 text-xs font-semibold`;
+            toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            // Automatic dismiss
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 4000);
+        }
+
+        // Panggilan API Gemini dengan Fungsi Backoff Eksponen (Exponential Backoff)
+        async function callGemini(prompt) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }]
+            };
+
+            let delay = 1000;
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) {
+                        const result = await response.json();
+                        return result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    }
+                } catch (error) {
+                    // Cuba lagi mengikut gandaan masa (backoff)
+                }
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2;
+            }
+            throw new Error("Gagal menghubungi Gemini API selepas beberapa percubaan. Sila periksa sambungan internet anda.");
+        }
+
+        // SISTEM SUARA AI PINTAR (GEMINI TTS CALL & PCM16 TO WAV DECODER) ✨
+        async function speakText(textToSpeak, btnElement) {
+            if (!textToSpeak) {
+                showToast("Tiada teks yang tersedia untuk dibacakan.", "error");
+                return;
+            }
+
+            const cleanText = textToSpeak.replace(/[\*\#_`~]/g, '');
+
+            const originalBtnHtml = btnElement.innerHTML;
+            btnElement.innerHTML = `<span>⏳ Menjana Suara...</span>`;
+            btnElement.setAttribute("disabled", "true");
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: `Say this beautifully in Malay: ${cleanText}` }] }],
+                generationConfig: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: {
+                        voiceConfig: {
+                            prebuiltVoiceConfig: {
+                                voiceName: "Kore" 
+                            }
+                        }
+                    }
+                },
+                model: "gemini-2.5-flash-preview-tts"
+            };
+
+            let delay = 1000;
+            let success = false;
+
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        const inlinePart = result.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+                        if (inlinePart && inlinePart.inlineData) {
+                            const base64Audio = inlinePart.inlineData.data;
+                            const mimeType = inlinePart.inlineData.mimeType || "audio/L16;rate=24000";
+                            
+                            playPCM(base64Audio, mimeType);
+                            success = true;
+                            break;
+                        }
+                    }
+                } catch (error) {
+                    // Backoff retry
+                }
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2;
+            }
+
+            btnElement.innerHTML = originalBtnHtml;
+            btnElement.removeAttribute("disabled");
+
+            if (!success) {
+                showToast("Gagal menjana audio suara AI. Sila cuba sekali lagi.", "error");
+            }
+        }
+
+        // Memainkan audio PCM16 dengan menukar kepada kontena WAV masa nyata
+        function playPCM(base64Data, mimeType) {
+            const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)?.[1] || "24000", 10);
+            const raw = atob(base64Data);
+            const arrayBuffer = new ArrayBuffer(raw.length);
+            const view = new Uint8Array(arrayBuffer);
+            for (let i = 0; i < raw.length; i++) {
+                view[i] = raw.charCodeAt(i);
+            }
+            
+            const wavBuffer = pcmToWav(arrayBuffer, sampleRate);
+            const blob = new Blob([wavBuffer], { type: 'audio/wav' });
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+            audio.play();
+            showToast("Suara AI dimainkan!", "success");
+        }
+
+        // Pembina format fail WAV (PCM-to-WAV) secara manual
+        function pcmToWav(pcmBuffer, sampleRate) {
+            const buffer = new ArrayBuffer(44 + pcmBuffer.byteLength);
+            const view = new DataView(buffer);
+            
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + pcmBuffer.byteLength, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true); // PCM Format = 1
+            view.setUint16(22, 1, true); // Mono = 1 Channel
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true); // 16-bit mono = 2 bytes/sample
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true); // 16 bits per sample
+            writeString(view, 36, 'data');
+            view.setUint32(40, pcmBuffer.byteLength, true);
+            
+            const pcmView = new Uint8Array(pcmBuffer);
+            const wavView = new Uint8Array(buffer, 44);
+            wavView.set(pcmView);
+            
+            return buffer;
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        // Muatkan data pada permulaan halaman
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedData = localStorage.getItem('reading_tracker_100_data');
+            if (savedData) {
+                try {
+                    bookLogs = JSON.parse(savedData);
+                } catch (e) {
+                    bookLogs = {};
+                }
+            }
+
+            renderTracker();
+            updateStatistics();
+        });
+
+        // Menetapkan warna pilihan dari panel kawalan cepat
+        function setSelectedColor(colorCode, element) {
+            selectedColor = colorCode;
+            
+            const buttons = document.querySelectorAll('.color-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('border-slate-900', 'scale-110');
+                btn.classList.add('border-transparent');
+            });
+
+            element.classList.remove('border-transparent');
+            element.classList.add('border-slate-900', 'scale-110');
+        }
+
+        // Lukis trek bulatan & bendera
+        function renderTracker() {
+            const trackGroup = document.getElementById('bubble-track');
+            trackGroup.innerHTML = ''; 
+
+            const cx = 300;
+            const cy = 305;
+            let currentBookNumber = 1;
+            let allPoints = [];
+
+            layers.forEach((layer, layerIdx) => {
+                for (let i = 0; i < layer.count; i++) {
+                    const angleDeg = layer.startAngle + (i * 360 / layer.count);
+                    const angleRad = angleDeg * Math.PI / 180;
+
+                    const bx = cx + layer.r * Math.cos(angleRad);
+                    const by = cy + layer.r * Math.sin(angleRad);
+
+                    allPoints.push({
+                        x: bx,
+                        y: by,
+                        r: 12.5 - (layerIdx * 1.2), 
+                        angle: angleDeg,
+                        angleRad: angleRad,
+                        layerR: layer.r,
+                        bookNum: currentBookNumber++
+                    });
+                }
+            });
+
+            allPoints.forEach((pt) => {
+                const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circle.setAttribute("cx", pt.x);
+                circle.setAttribute("cy", pt.y);
+                circle.setAttribute("r", pt.r);
+                
+                const savedBook = bookLogs[pt.bookNum];
+                if (savedBook && savedBook.color) {
+                    circle.setAttribute("fill", savedBook.color);
+                    circle.setAttribute("stroke-width", "2.5");
+                } else {
+                    circle.setAttribute("fill", "white");
+                    circle.setAttribute("stroke-width", "1.5");
+                }
+                
+                circle.setAttribute("stroke", "black");
+                circle.setAttribute("class", "bubble-node");
+                circle.setAttribute("id", `book-${pt.bookNum}`);
+                
+                circle.addEventListener('click', () => {
+                    handleCircleClick(pt.bookNum, circle);
+                });
+
+                group.appendChild(circle);
+
+                const numText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                numText.setAttribute("x", pt.x);
+                numText.setAttribute("y", pt.y + 0.5);
+                numText.setAttribute("text-anchor", "middle");
+                numText.setAttribute("dominant-baseline", "middle");
+                numText.setAttribute("font-size", pt.r * 0.75);
+                numText.setAttribute("font-weight", "600");
+                numText.setAttribute("fill", "#1e293b");
+                numText.setAttribute("style", "pointer-events: none;");
+                numText.textContent = pt.bookNum;
+                group.appendChild(numText);
+
+                if (milestoneIndices.includes(pt.bookNum)) {
+                    const flagGroup = drawEmptyMilestoneFlag(pt, cx, cy);
+                    trackGroup.appendChild(flagGroup);
+                }
+
+                trackGroup.appendChild(group);
+            });
+        }
+
+        // Pengendali Klik Bulatan
+        function handleCircleClick(bookNum, element) {
+            const currentFill = element.getAttribute("fill");
+            if (currentFill === "white" || currentFill === "#ffffff") {
+                element.setAttribute("fill", selectedColor);
+                element.setAttribute("stroke-width", "2.5");
+                
+                if (!bookLogs[bookNum]) {
+                    bookLogs[bookNum] = {};
+                }
+                bookLogs[bookNum].color = selectedColor;
+                showToast(`Buku #${bookNum} diwarnakan secara cepat!`, "success");
+            } else {
+                element.setAttribute("fill", "white");
+                element.setAttribute("stroke-width", "1.5");
+                if (bookLogs[bookNum]) {
+                    delete bookLogs[bookNum];
+                }
+                showToast(`Buku #${bookNum} dipadamkan warna.`, "info");
+            }
+
+            saveToStorage();
+            updateStatistics();
+            selectBookForLogging(bookNum);
+        }
+
+        // Fungsi melukis bendera kosong
+        function drawEmptyMilestoneFlag(pt, cx, cy) {
+            const flagG = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            const dx = Math.cos(pt.angleRad);
+            const dy = Math.sin(pt.angleRad);
+
+            const startDist = pt.r + 3;
+            const endDist = startDist + 22; 
+            const widthOffset = 8; 
+
+            const xStart = pt.x + dx * startDist;
+            const yStart = pt.y + dy * startDist;
+            const xEnd = pt.x + dx * endDist;
+            const yEnd = pt.y + dy * endDist;
+
+            const px = -dy;
+            const py = dx;
+
+            const p1x = xStart + px * widthOffset;
+            const p1y = yStart + py * widthOffset;
+            const p2x = xEnd + px * widthOffset;
+            const p2y = yEnd + py * widthOffset;
+            const p3x = xEnd - px * widthOffset;
+            const p3y = yEnd - py * widthOffset;
+            const p4x = xStart - px * widthOffset;
+            const p4y = yStart - py * widthOffset;
+
+            const xIndent = xEnd - dx * 6;
+            const yIndent = yEnd - dy * 6;
+
+            const flagPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            const pathData = `
+                M ${p1x} ${p1y}
+                L ${p2x} ${p2y}
+                L ${xIndent} ${yIndent}
+                L ${p3x} ${p3y}
+                L ${p4x} ${p4y}
+                Z
+            `;
+            flagPath.setAttribute("d", pathData);
+            flagPath.setAttribute("fill", "white");
+            flagPath.setAttribute("stroke", "black");
+            flagPath.setAttribute("stroke-width", "1.5");
+            flagPath.setAttribute("stroke-linejoin", "round");
+            
+            flagG.appendChild(flagPath);
+
+            const pole = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            pole.setAttribute("x1", pt.x + dx * pt.r);
+            pole.setAttribute("y1", pt.y + dy * pt.r);
+            pole.setAttribute("x2", xStart);
+            pole.setAttribute("y2", yStart);
+            pole.setAttribute("stroke", "black");
+            pole.setAttribute("stroke-width", "1.5");
+            flagG.appendChild(pole);
+
+            return flagG;
+        }
+
+        // Logik pemilihan buku untuk ditulis dalam jurnal/diari digital
+        function selectBookForLogging(bookNum) {
+            selectedBookNumber = bookNum;
+            
+            document.getElementById('selected-book-badge').textContent = `Buku #${bookNum}`;
+            
+            const inputTitle = document.getElementById('input-title');
+            const inputDDC = document.getElementById('input-ddc');
+            const btnAiLog = document.getElementById('btn-ai-log');
+            const btnSaveLog = document.getElementById('btn-save-log');
+
+            inputTitle.removeAttribute('disabled');
+            inputDDC.removeAttribute('disabled');
+            btnAiLog.removeAttribute('disabled');
+            btnSaveLog.removeAttribute('disabled');
+
+            if (bookLogs[bookNum]) {
+                const bookTitle = bookLogs[bookNum].title || '';
+                inputTitle.value = bookTitle;
+                inputDDC.value = bookLogs[bookNum].genre || ''; 
+                
+                const triviaInput = document.getElementById('trivia-book-title');
+                if (!triviaInput.value.trim()) {
+                    triviaInput.value = bookTitle;
+                }
+                
+                if (bookLogs[bookNum].aiSummary) {
+                    showAiLogResult(bookLogs[bookNum].aiSummary, bookLogs[bookNum].aiLesson);
+                } else {
+                    hideAiLogResult();
+                }
+            } else {
+                inputTitle.value = '';
+                inputDDC.value = '';
+                hideAiLogResult();
+            }
+        }
+
+        // Panggilan AI untuk menjana Rumusan Pintar & Pengajaran DDC/Fiksyen (KEMASKINI: Lesson digantikan dengan Question)
+        async function generateAILog() {
+            const title = document.getElementById('input-title').value.trim();
+            const ddcClass = document.getElementById('input-ddc').value;
+
+            if (!title) {
+                showToast("Sila masukkan tajuk buku terlebih dahulu.", "error");
+                return;
+            }
+            if (!ddcClass) {
+                showToast("Sila pilih pengelasan DDC/Fiksyen dahulu.", "error");
+                return;
+            }
+
+            const loader = document.getElementById('ai-log-loading');
+            const btnAiLog = document.getElementById('btn-ai-log');
+            
+            loader.classList.remove('hidden');
+            btnAiLog.setAttribute('disabled', 'true');
+
+            const prompt = `Anda adalah pustakawan pintar dan diari membaca buku profesional. Sila berikan respon dalam Bahasa Melayu. Berdasarkan buku yang bertajuk "${title}" di bawah kategori pengelasan "${ddcClass}", sila jana output JSON ringkas dengan format:
+            {
+              "summary": "Rumusan sangat ringkas 1 ayat tentang kepentingan / mesej utama buku fiksyen atau ilmiah ini mengikut sudut pandang kategori tersebut.",
+              "lesson": "Satu nilai murni, pengajaran, atau iktibar utama yang boleh diambil daripada buku ini untuk kehidupan seharian."
+            }`;
+
+            try {
+                const aiResponseText = await callGemini(prompt);
+                
+                const jsonStart = aiResponseText.indexOf('{');
+                const jsonEnd = aiResponseText.lastIndexOf('}') + 1;
+                
+                if (jsonStart !== -1 && jsonEnd !== -1) {
+                    const jsonString = aiResponseText.substring(jsonStart, jsonEnd);
+                    const data = JSON.parse(jsonString);
+                    
+                    showAiLogResult(data.summary, data.lesson || data.question || "Buku ini kaya dengan ilmu yang bermakna.");
+                    
+                    if (!bookLogs[selectedBookNumber]) {
+                        bookLogs[selectedBookNumber] = {};
+                    }
+                    bookLogs[selectedBookNumber].aiSummary = data.summary;
+                    bookLogs[selectedBookNumber].aiLesson = data.lesson || data.question;
+                } else {
+                    showAiLogResult(`Buku bertajuk "${title}" di bawah kategori ${ddcClass} membincangkan tema yang amat menarik.`, `Membaca memperluas horizon pemikiran dan membina disiplin diri yang jitu.`);
+                }
+                showToast("Ulasan AI Berjaya dijana!", "success");
+            } catch (err) {
+                showToast(err.message, "error");
+            } finally {
+                loader.classList.add('hidden');
+                btnAiLog.removeAttribute('disabled');
+            }
+        }
+
+        // KEMASKINI: Papar pengajaran utama
+        function showAiLogResult(summary, lesson) {
+            const resultBox = document.getElementById('ai-log-result');
+            document.getElementById('ai-summary').textContent = summary;
+            document.getElementById('ai-lesson').textContent = lesson;
+            resultBox.classList.remove('hidden');
+        }
+
+        function hideAiLogResult() {
+            document.getElementById('ai-log-result').classList.add('hidden');
+        }
+
+        // Menyimpan log secara lokal (dalam memori)
+        function saveBookLog() {
+            if (!selectedBookNumber) return;
+
+            const title = document.getElementById('input-title').value.trim();
+            const ddcClass = document.getElementById('input-ddc').value;
+
+            if (!title) {
+                showToast("Sila masukkan tajuk buku.", "error");
+                return;
+            }
+            if (!ddcClass) {
+                showToast("Sila pilih klasifikasi.", "error");
+                return;
+            }
+
+            if (!bookLogs[selectedBookNumber]) {
+                bookLogs[selectedBookNumber] = {};
+            }
+
+            bookLogs[selectedBookNumber].title = title;
+            bookLogs[selectedBookNumber].genre = ddcClass; // disimpan di bawah parameter genre untuk keserasian struktur
+            
+            if (!bookLogs[selectedBookNumber].color) {
+                bookLogs[selectedBookNumber].color = selectedColor;
+            }
+
+            const bubble = document.getElementById(`book-${selectedBookNumber}`);
+            if (bubble) {
+                bubble.setAttribute("fill", bookLogs[selectedBookNumber].color);
+                bubble.setAttribute("stroke-width", "2.5");
+            }
+
+            saveToStorage();
+            updateStatistics();
+            showToast(`Buku #${selectedBookNumber} "${title}" berjaya disimpan!`, "success");
+        }
+
+        // JANA KUIZ TRIVIA BUKU AI ✨
+        async function generateBookTrivia() {
+            const titleInput = document.getElementById('trivia-book-title');
+            const title = titleInput.value.trim();
+
+            if (!title) {
+                showToast("Sila masukkan tajuk buku terlebih dahulu.", "error");
+                return;
+            }
+
+            const loader = document.getElementById('ai-trivia-loading');
+            const triviaBox = document.getElementById('ai-trivia-container');
+            
+            loader.classList.remove('hidden');
+            triviaBox.classList.add('hidden');
+
+            const prompt = `Anda adalah pakar kuiz sastera interaktif. Jana kuiz trivia 3 soalan pilihan ganda yang mencabar mengenai buku bertajuk "${title}". Berikan soalan dan semua pilihan dalam Bahasa Melayu. Respon hendaklah dalam format JSON tulen seperti berikut:
+            {
+              "quiz": [
+                {
+                  "question": "Mesej soalan pertama...",
+                  "options": ["Opsyen A", "Opsyen B", "Opsyen C", "Opsyen D"],
+                  "correctIndex": 2,
+                  "explanation": "Huraian ringkas jawapan betul..."
+                },
+                {
+                  "question": "Mesej soalan kedua...",
+                  "options": ["Opsyen A", "Opsyen B", "Opsyen C", "Opsyen D"],
+                  "correctIndex": 0,
+                  "explanation": "Huraian ringkas..."
+                },
+                {
+                  "question": "Mesej soalan ketiga...",
+                  "options": ["Opsyen A", "Opsyen B", "Opsyen C", "Opsyen D"],
+                  "correctIndex": 1,
+                  "explanation": "Huraian ringkas..."
+                }
+              ]
+            }`;
+
+            try {
+                const responseText = await callGemini(prompt);
+                const jsonStart = responseText.indexOf('{');
+                const jsonEnd = responseText.lastIndexOf('}') + 1;
+
+                if (jsonStart !== -1 && jsonEnd !== -1) {
+                    const parsed = JSON.parse(responseText.substring(jsonStart, jsonEnd));
+                    triviaQuizData = parsed.quiz;
+                    currentTriviaIndex = 0;
+                    triviaUserScore = 0;
+                    displayTriviaQuestion();
+                    triviaBox.classList.remove('hidden');
+                    showToast("Kuiz Trivia Sedia Bermula!", "success");
+                } else {
+                    throw new Error("Gagal menstrukturkan data kuiz.");
+                }
+            } catch (err) {
+                showToast("Gagal menjana trivia. Sila cuba lagi dengan tajuk buku yang lebih terkenal.", "error");
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        // Paparkan soalan trivia semasa
+        function displayTriviaQuestion() {
+            triviaAnswered = false;
+            const q = triviaQuizData[currentTriviaIndex];
+            
+            document.getElementById('trivia-progress').textContent = `Soalan ${currentTriviaIndex + 1} daripada 3`;
+            document.getElementById('trivia-score').textContent = `Skor: ${triviaUserScore}`;
+            document.getElementById('trivia-question-text').textContent = q.question;
+            
+            const optionsBox = document.getElementById('trivia-options-box');
+            optionsBox.innerHTML = '';
+            
+            document.getElementById('trivia-explanation-box').classList.add('hidden');
+            document.getElementById('btn-trivia-next').classList.add('hidden');
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-3 border border-slate-200 hover:bg-slate-100 rounded-xl transition text-xs font-medium flex justify-between items-center bg-white";
+                btn.innerHTML = `<span>${opt}</span>`;
+                btn.onclick = () => selectTriviaAnswer(idx, btn);
+                optionsBox.appendChild(btn);
+            });
+        }
+
+        // Logik pemilihan jawapan trivia
+        function selectTriviaAnswer(selectedIdx, btnElement) {
+            if (triviaAnswered) return;
+            triviaAnswered = true;
+
+            const q = triviaQuizData[currentTriviaIndex];
+            const correctIdx = q.correctIndex;
+            const optionsBox = document.getElementById('trivia-options-box');
+            const buttons = optionsBox.getElementsByTagName('button');
+
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove('hover:bg-slate-100');
+                if (i === correctIdx) {
+                    buttons[i].classList.add('bg-emerald-100', 'border-emerald-300', 'text-emerald-900', 'font-bold');
+                    buttons[i].innerHTML += `<span class="text-emerald-600">✓ Jawapan Betul</span>`;
+                } else if (i === selectedIdx) {
+                    buttons[i].classList.add('bg-rose-100', 'border-rose-300', 'text-rose-900');
+                    buttons[i].innerHTML += `<span class="text-rose-600">✗ Salah</span>`;
+                } else {
+                    buttons[i].classList.add('opacity-60');
+                }
+            }
+
+            if (selectedIdx === correctIdx) {
+                triviaUserScore++;
+                document.getElementById('trivia-score').textContent = `Skor: ${triviaUserScore}`;
+                showToast("Syabas! Jawapan anda betul.", "success");
+            } else {
+                showToast("Oops, jawapan salah.", "info");
+            }
+
+            const expBox = document.getElementById('trivia-explanation-box');
+            expBox.innerHTML = `<strong>Penjelasan:</strong> ${q.explanation}`;
+            expBox.classList.remove('hidden');
+
+            const nextBtn = document.getElementById('btn-trivia-next');
+            if (currentTriviaIndex < 2) {
+                nextBtn.textContent = "Seterusnya";
+            } else {
+                nextBtn.textContent = "Tamatkan Cabaran Kuiz";
+            }
+            nextBtn.classList.remove('hidden');
+        }
+
+        // Peralihan ke soalan trivia seterusnya
+        function nextTriviaQuestion() {
+            if (currentTriviaIndex < 2) {
+                currentTriviaIndex++;
+                displayTriviaQuestion();
+            } else {
+                showToast(`Tahniah! Anda tamat kuiz dengan skor ${triviaUserScore}/3!`, "success");
+                
+                const container = document.getElementById('ai-trivia-container');
+                container.innerHTML = `
+                    <div class="text-center py-4 space-y-3">
+                        <span class="text-3xl">🎉</span>
+                        <h4 class="font-bold text-slate-800 text-sm">Cabaran Trivia Tamat!</h4>
+                        <p class="text-xs text-slate-600">Anda menjawab dengan betul sebanyak <strong class="text-indigo-600 text-sm">${triviaUserScore} daripada 3</strong> soalan!</p>
+                        <button onclick="resetTriviaUI()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 rounded-xl text-xs transition">
+                            Cuba Kuiz Buku Lain
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Set semula UI kuiz trivia
+        function resetTriviaUI() {
+            const container = document.getElementById('ai-trivia-container');
+            container.innerHTML = `
+                <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                    <span id="trivia-progress" class="font-bold text-slate-700">Soalan 1 daripada 3</span>
+                    <div class="flex items-center gap-2">
+                        <button onclick="speakText(document.getElementById('trivia-question-text').textContent, this)" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-2 py-0.5 rounded-lg text-[9px] font-bold transition flex items-center gap-0.5">
+                            <span>🔊 Sebut Soalan</span>
+                        </button>
+                        <span id="trivia-score" class="bg-indigo-100 text-indigo-800 font-bold px-2.5 py-1 rounded-full">Skor: 0</span>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <p id="trivia-question-text" class="font-semibold text-slate-800 text-sm leading-relaxed"></p>
+                    <div id="trivia-options-box" class="flex flex-col gap-2"></div>
+                </div>
+                <div id="trivia-explanation-box" class="hidden p-3 bg-indigo-50 border border-indigo-100 rounded-xl text-slate-700 leading-relaxed"></div>
+                <button id="btn-trivia-next" onclick="nextTriviaQuestion()" class="hidden w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-xl transition">Seterusnya</button>
+            `;
+            container.classList.add('hidden');
+            document.getElementById('trivia-book-title').value = '';
+        }
+
+        // Simpan data tracker ke Local Storage
+        function saveToStorage() {
+            localStorage.setItem('reading_tracker_100_data', JSON.stringify(bookLogs));
+        }
+
+        // Kemas kini Statistik Penggunaan Secara Dinamik
+        function updateStatistics() {
+            let count = 0;
+            for (let key in bookLogs) {
+                if (bookLogs[key] && bookLogs[key].color) {
+                    count++;
+                }
+            }
+
+            const percent = Math.min(Math.round((count / 100) * 100), 100);
+            
+            document.getElementById('stat-count').textContent = count;
+            document.getElementById('stat-bar').style.width = `${percent}%`;
+            
+            const statText = document.getElementById('stat-percent');
+            if (count === 0) {
+                statText.textContent = "Sedia untuk mulakan kembara membaca anda! Sila pilih bulatan di sebelah kiri.";
+            } else if (count < 30) {
+                statText.textContent = `Langkah permulaan yang mantap! Anda telah melengkapkan ${percent}% cabaran!`;
+            } else if (count < 70) {
+                statText.textContent = `Hebat! Anda sudah melengkapkan ${percent}% cabaran membaca. Teruskan usaha!`;
+            } else if (count < 100) {
+                statText.textContent = `Sangat menakjubkan! Hanya tinggal sedikit sahaja lagi untuk mencapai 100%!`;
+            } else {
+                statText.textContent = `Syabas dan tahniah! Anda berjaya membaca 100 buku sepenuhnya! 🎉`;
+            }
+        }
+
+        // Panggilan AI untuk Rekomendasi Buku Baru (AI Recommendations)
+        async function getAIConsultation() {
+            const pref = document.getElementById('input-preference').value.trim();
+            if (!pref) {
+                showToast("Sila tulis serba sedikit tentang minat pembacaan anda.", "info");
+                return;
+            }
+
+            const loader = document.getElementById('ai-consult-loading');
+            const resultBox = document.getElementById('ai-consult-result');
+            const textBox = document.getElementById('consult-text');
+
+            loader.classList.remove('hidden');
+            resultBox.classList.add('hidden');
+
+            const prompt = `Anda adalah pakar penasihat buku perpustakaan. Sila berikan respon dalam Bahasa Melayu. Berdasarkan minat pembaca berikut: "${pref}", sila berikan cadangan 3 buah buku yang paling sesuai dibaca. Untuk setiap buku, nyatakan sama ada ia jatuh di bawah kelas Sistem Perpuluhan Dewey (DDC) tertentu, atau merupakan Fiksyen khusus (Bahasa Inggeris/Melayu/Cina), berserta maklumat penulis dan ulasan ringkas berimpak tinggi.`;
+
+            try {
+                const aiResponse = await callGemini(prompt);
+                textBox.innerHTML = parseMarkdown(aiResponse);
+                resultBox.classList.remove('hidden');
+                showToast("Syor Buku Sedia Diteroka!", "success");
+            } catch (err) {
+                showToast(err.message, "error");
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        // Panggilan AI untuk Pembakar Semangat Pembaca (AI Motivation)
+        async function getAIMotivation() {
+            const textBox = document.getElementById('motivation-text');
+            const resultBox = document.getElementById('ai-motivation-result');
+
+            textBox.textContent = "Menghubungi penulis legenda...";
+            resultBox.classList.remove('hidden');
+
+            const prompt = `Sila jana satu petikan kata-kata semangat kreatif dan mendalam tentang pentingnya membaca buku daripada perspektif mana-mana tokoh sasterawan atau penulis terkenal dunia (Contoh: Shakespeare, Pramoedya Ananta Toer, J.K. Rowling, dsb.). Berikan respon dalam Bahasa Melayu yang menyentuh jiwa, berserta nama penulis tersebut di hujung petikan. Ringkas (2-3 ayat sahaja).`;
+
+            try {
+                const motivation = await callGemini(prompt);
+                textBox.textContent = motivation.replace(/"/g, '');
+                
+                document.getElementById('btn-speak-motivation').classList.remove('hidden');
+                showToast("Suntikan Motivasi Diterima!", "success");
+            } catch (err) {
+                textBox.textContent = "Buku adalah kapal yang belayar di lautan masa. - Francis Bacon";
+            }
+        }
+
+        // JANA PROFIL PEMBACA AI (SISTEM DDC & FIKSYEN INTEGRATED)
+        async function generateAIReaderProfile() {
+            const loggedBooks = [];
+            for (let key in bookLogs) {
+                if (bookLogs[key] && bookLogs[key].title) {
+                    loggedBooks.push(`"${bookLogs[key].title}" (Kategori: ${bookLogs[key].genre || 'Umum'})`);
+                }
+            }
+
+            const modal = document.getElementById('profile-modal');
+            const titleField = document.getElementById('profile-title');
+            const analysisField = document.getElementById('profile-analysis');
+
+            modal.classList.remove('hidden');
+            titleField.textContent = "Sedang Menganalisis...";
+            analysisField.textContent = "Gemini sedang meneliti corak klasifikasi Sistem Perpuluhan Dewey (DDC) serta kecenderungan karya fiksyen pilihan bahasa anda untuk merumuskan minat sastera anda...";
+
+            let bookListText = loggedBooks.join(', ');
+            if (loggedBooks.length === 0) {
+                bookListText = "Tiada buku lagi. Pembaca baru mula berjinak-jinak dengan cabaran.";
+            }
+
+            const prompt = `Anda adalah ahli psikologi pembaca sastera, pakar klasifikasi perpustakaan, dan penganalisis fiksyen kreatif. Berikan maklum balas dalam Bahasa Melayu. Berdasarkan senarai buku beserta klasifikasi Dewey (DDC) atau kategori fiksyen bahasa yang telah dibaca oleh pengguna ini: [${bookListText}], berikan:
+            1. Satu gelaran unik bertaraf akademik perpustakaan yang melambangkan personaliti pembaca mereka (Maksimum 4 patah perkataan, contoh: Kurator Kebijaksanaan Kosmik, Ahli Fiksyen Melayu Ulung, dsb.).
+            2. Analisis psikologi yang menyeronokkan berdasarkan keseimbangan subjek DDC dan kekerapan pembacaan fiksyen dalam pelbagai bahasa.
+            Format output anda hendaklah JSON seperti ini:
+            {
+              "title": "Gelaran Unik DDC/Fiksyen",
+              "analysis": "Perenggan analisis..."
+            }`;
+
+            try {
+                const response = await callGemini(prompt);
+                const jsonStart = response.indexOf('{');
+                const jsonEnd = response.lastIndexOf('}') + 1;
+                
+                if (jsonStart !== -1 && jsonEnd !== -1) {
+                    const data = JSON.parse(response.substring(jsonStart, jsonEnd));
+                    titleField.textContent = data.title;
+                    analysisField.textContent = data.analysis;
+                } else {
+                    titleField.textContent = "Kataloger Permulaan Kosmik";
+                    analysisField.textContent = "Anda berada di gerbang pelayaran ilmu! Teruskan mengelaskan dan membaca buku pertama anda untuk analisis personaliti Dewey dan fiksyen yang tepat.";
+                }
+                showToast("Profil Pembaca AI Selesai!", "success");
+            } catch (err) {
+                titleField.textContent = "Kembara Sastera Misteri";
+                analysisField.textContent = "Gagal memproses analisis profil. Teruskan membaca dan cuba sebentar lagi!";
+            }
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profile-modal').classList.add('hidden');
+        }
+
+        // JANA SIJIL PENGHARGAAN & ANUGERAH AI
+        async function generateAICertificate() {
+            const loggedBooks = [];
+            let count = 0;
+            for (let key in bookLogs) {
+                if (bookLogs[key] && bookLogs[key].color) {
+                    count++;
+                }
+                if (bookLogs[key] && bookLogs[key].title) {
+                    loggedBooks.push(`"${bookLogs[key].title}"`);
+                }
+            }
+
+            const modal = document.getElementById('certificate-modal');
+            const certTitle = document.getElementById('cert-title');
+            const certDesc = document.getElementById('cert-desc');
+            const certDate = document.getElementById('cert-date');
+            const certBooksCount = document.getElementById('cert-books-count');
+
+            modal.classList.remove('hidden');
+            certTitle.textContent = "Sedang Merangka Sijil...";
+            certDesc.textContent = "Gemini AI sedang meneliti dedikasi pembacaan anda untuk mereka bentuk gelaran kehormat bertulis yang paling bernilai sastera tinggi...";
+            certDate.textContent = new Date().toLocaleDateString('ms-MY', { year: 'numeric', month: 'long', day: 'numeric' });
+            certBooksCount.textContent = count;
+
+            let booksContext = loggedBooks.slice(-5).join(', ');
+            if (loggedBooks.length === 0) {
+                booksContext = "Tiada buku lagi";
+            }
+
+            const prompt = `Anda adalah penasihat sastera agung diraja. Sila balas dalam Bahasa Melayu. Berdasarkan fakta bahawa mereka telah membaca ${count} buku (Buku terakhir dibaca termasuk: [${booksContext}]), berikan sebuah gelaran kehormatan yang sangat eksklusif (2-3 perkataan sahaja) and sebuah perenggan proklamasi penghargaan (2-3 ayat) yang memuji ketekunan pengguna ini dalam menguasai khazanah ilmu dan fiksyen pelbagai bahasa.
+            Format output mestilah dalam JSON tulen seperti ini:
+            {
+              "title": "GELARAN SENI AGUNG",
+              "proclamation": "Perenggan sanjungan..."
+            }`;
+
+            try {
+                const response = await callGemini(prompt);
+                const jsonStart = response.indexOf('{');
+                const jsonEnd = response.lastIndexOf('}') + 1;
+                
+                if (jsonStart !== -1 && jsonEnd !== -1) {
+                    const data = JSON.parse(response.substring(jsonStart, jsonEnd));
+                    certTitle.textContent = data.title;
+                    certDesc.textContent = `"${data.proclamation}"`;
+                } else {
+                    certTitle.textContent = "PENGEBARA CAHAYA ILMU";
+                    certDesc.textContent = `"Dengan tekad mulia, pemegang sijil ini memulakan langkah merentas runut masa melalui ribuan lembaran tinta emas."`;
+                }
+                showToast("Sijil Pencapaian AI Sedia Dicetak!", "success");
+            } catch (err) {
+                certTitle.textContent = "PERINTIS KREATIVITI DIGITAL";
+                certDesc.textContent = `"Menerokai ufuk pemikiran tanpa batasan dengan keberanian sastera yang amat terpuji."`;
+            }
+        }
+
+        function closeCertificateModal() {
+            document.getElementById('certificate-modal').classList.add('hidden');
+        }
+
+        function printCertificate() {
+            const printContent = document.getElementById('certificate-content').innerHTML;
+
+            const stylePrint = `
+                <style>
+                    body {
+                        background-color: white !important;
+                        font-family: 'Plus Jakarta Sans', sans-serif;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                        margin: 0;
+                    }
+                    .certificate-print {
+                        border: 8px double #b45309;
+                        padding: 40px;
+                        background-color: #fffbeb;
+                        text-align: center;
+                        max-width: 600px;
+                        width: 100%;
+                        box-shadow: none;
+                        border-radius: 12px;
+                    }
+                    .cursive-title {
+                        font-family: 'Dancing Script', cursive;
+                        font-size: 3rem;
+                        color: #1e293b;
+                    }
+                    .cert-text {
+                        font-size: 14px;
+                        color: #334155;
+                        line-height: 1.6;
+                    }
+                </style>
+            `;
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Cetak Sijil Penghargaan AI</title>
+                    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+                    ${stylePrint}
+                </head>
+                <body>
+                    <div class="certificate-print">
+                        ${printContent}
+                    </div>
+                    <script>
+                        window.onload = function() {
+                            window.print();
+                            window.close();
+                        }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        // SEMBANG KELAB BUKU AI
+        async function sendChatMessage() {
+            const chatInput = document.getElementById('chat-input');
+            const userMsg = chatInput.value.trim();
+            if (!userMsg) return;
+
+            const chatWindow = document.getElementById('chat-window');
+
+            const userDiv = document.createElement('div');
+            userDiv.className = "bg-slate-200 text-slate-900 p-2.5 rounded-2xl self-end text-right ml-8";
+            userDiv.innerHTML = `<strong>Anda:</strong> ${userMsg}`;
+            chatWindow.appendChild(userDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            chatInput.value = "";
+
+            const loggedBooks = [];
+            for (let key in bookLogs) {
+                if (bookLogs[key] && bookLogs[key].title) {
+                    loggedBooks.push(`Buku ${key}: "${bookLogs[key].title}" (Klasifikasi: ${bookLogs[key].genre || 'Tiada Kelas/Kategori'})`);
+                }
+            }
+            const contextText = loggedBooks.length > 0 ? loggedBooks.join('. ') : "Tiada buku yang direkodkan lagi.";
+
+            const aiPlaceholder = document.createElement('div');
+            aiPlaceholder.className = "bg-indigo-50 border border-indigo-100 text-indigo-900 p-2.5 rounded-2xl mr-8 animate-pulse";
+            aiPlaceholder.innerHTML = `<strong>✨ Kelab Buku Gemini:</strong> Sedang berfikir...`;
+            chatWindow.appendChild(aiPlaceholder);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            const prompt = `Anda adalah hos Kelab Buku Gemini yang sangat mesra dan berilmu perpustakaan. Sentiasa balas dalam Bahasa Melayu. Berikut adalah rekod buku beserta klasifikasi DDC atau Fiksyen Bahasa yang telah dibaca oleh pengguna setakat ini: [${contextText}]. Pengguna berkata: "${userMsg}". Sila balas dengan ramah, berikan ulasan sastera, ulasan bibliografi, atau huraian fiksyen menarik yang berhubung kait dengan mesej mereka. (Balas dalam 2-3 ayat sahaja).`;
+
+            try {
+                const reply = await callGemini(prompt);
+                aiPlaceholder.classList.remove('animate-pulse');
+                aiPlaceholder.innerHTML = `<strong>✨ Kelab Buku Gemini:</strong> ${reply}`;
+            } catch (err) {
+                aiPlaceholder.classList.remove('animate-pulse');
+                aiPlaceholder.innerHTML = `<strong>✨ Kelab Buku Gemini:</strong> Maaf, talian kelab buku agak sibuk sekarang. Mari kita bincang tentang klasifikasi fiksyen kegemaran anda nanti!`;
+            }
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        // Penukar tulisan ringkas untuk paparan visual
+        function parseMarkdown(text) {
+            return text
+                .replace(/\*\*(.*?)\*\"/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/^- (.*)$/g, '• $1');
+        }
+
+        // Mod dialog pengesahan buatan sendiri (ganti confirm)
+        function confirmResetBubbles() {
+            const confirmBox = document.createElement('div');
+            confirmBox.className = "fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 no-print animate-fade-in";
+            confirmBox.innerHTML = `
+                <div class="bg-white p-6 rounded-3xl max-w-sm w-full shadow-2xl space-y-4 text-center">
+                    <span class="text-4xl">⚠️</span>
+                    <h3 class="font-bold text-slate-800 text-base">Padam Semua Data?</h3>
+                    <p class="text-xs text-slate-500 leading-relaxed">Tindakan ini akan memadam semua warna bulatan dan diari buku digital anda secara kekal dari peranti ini.</p>
+                    <div class="flex gap-3 justify-center">
+                        <button id="confirm-cancel" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs px-4 py-2 rounded-xl transition">Batal</button>
+                        <button id="confirm-ok" class="bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs px-4 py-2 rounded-xl transition">Ya, Padam</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(confirmBox);
+
+            document.getElementById('confirm-cancel').onclick = () => confirmBox.remove();
+            document.getElementById('confirm-ok').onclick = () => {
+                confirmBox.remove();
+                executeReset();
+            };
+        }
+
+        // Jalankan set semula data
+        function executeReset() {
+            const bubbles = document.querySelectorAll('.bubble-node');
+            bubbles.forEach(b => {
+                b.setAttribute("fill", "white");
+                b.setAttribute("stroke-width", "1.5");
+            });
+            
+            bookLogs = {};
+            localStorage.removeItem('reading_tracker_100_data');
+
+            document.getElementById('selected-book-badge').textContent = `Sila Pilih di Kiri`;
+            document.getElementById('input-title').value = '';
+            document.getElementById('input-title').setAttribute('disabled', 'true');
+            const selectDDC = document.getElementById('input-ddc');
+            selectDDC.value = '';
+            selectDDC.setAttribute('disabled', 'true');
+            document.getElementById('btn-ai-log').setAttribute('disabled', 'true');
+            document.getElementById('btn-save-log').setAttribute('disabled', 'true');
+            hideAiLogResult();
+            closeProfileModal();
+            closeCertificateModal();
+            resetTriviaUI();
+            updateStatistics();
+            
+            showToast("Semua data penjejak telah dikosongkan.", "info");
+        }
+    </script>
+</body>
+</html>
